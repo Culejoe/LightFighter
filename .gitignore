@@ -1,0 +1,13 @@
+# .NET build output
+bin/
+obj/
+
+# IDE and per-user files
+*.user
+*.suo
+.vs/
+
+# Local diagnostic output
+app-stdout.txt
+app-stderr.txt
+app-start.log
