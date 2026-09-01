@@ -26,6 +26,33 @@ internal sealed class DarkTabControl : TabControl
         SetWindowTheme(Handle, string.Empty, string.Empty);
     }
 
+    protected override void OnDrawItem(DrawItemEventArgs e)
+    {
+        if (e.Index < 0 || e.Index >= TabCount)
+        {
+            return;
+        }
+
+        var selected = (e.State & DrawItemState.Selected) != 0;
+        using var background = new SolidBrush(selected ? DarkTheme.Surface : DarkTheme.Background);
+        using var textBrush = new SolidBrush(selected ? DarkTheme.Text : DarkTheme.MutedText);
+        using var accentBrush = new SolidBrush(DarkTheme.Accent);
+
+        e.Graphics.FillRectangle(background, e.Bounds);
+        if (selected)
+        {
+            e.Graphics.FillRectangle(accentBrush, e.Bounds.X, e.Bounds.Bottom - 3, e.Bounds.Width, 3);
+        }
+
+        TextRenderer.DrawText(
+            e.Graphics,
+            TabPages[e.Index].Text,
+            Font,
+            e.Bounds,
+            textBrush.Color,
+            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
+    }
+
     protected override void WndProc(ref Message message)
     {
         if (message.Msg == TCM_ADJUSTRECT)

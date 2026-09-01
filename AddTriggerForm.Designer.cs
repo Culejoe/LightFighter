@@ -32,7 +32,7 @@ partial class AddTriggerForm
 
         // lblProcessHint
         this.lblProcessHint.AutoSize = true;
-        this.lblProcessHint.ForeColor = Color.DimGray;
+        this.lblProcessHint.ForeColor = DarkTheme.MutedText;
         this.lblProcessHint.Location = new Point(130, 41);
         this.lblProcessHint.Text = "Without \".exe\", e.g. Firefox";
 

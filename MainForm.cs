@@ -10,6 +10,7 @@ public partial class MainForm : Form
     private AppSettings _settings = new();
     private readonly ProcessTriggerWatcher _watcher = new();
     private bool _isExiting;
+    private bool _isLoading;
 
     public MainForm()
     {
@@ -24,7 +25,6 @@ public partial class MainForm : Form
     private void ConfigureTheme()
     {
         DarkTheme.Apply(this);
-        DarkTheme.ConfigureTabs(tabControl);
         DarkTheme.ConfigureComboBox(cmbMonitors);
         DarkTheme.ConfigureComboBox(cmbSaveProfile);
         DarkTheme.ConfigureProfileAction(btnSaveCurrentProfile);
@@ -40,6 +40,8 @@ public partial class MainForm : Form
         DarkTheme.ConfigureButton(btnRemoveTrigger, destructive: true);
         lblBrightnessValue.ForeColor = DarkTheme.Accent;
         lblContrastValue.ForeColor = DarkTheme.Accent;
+        lblStatus.ForeColor = DarkTheme.MutedText;
+        lblTriggerStatus.ForeColor = DarkTheme.MutedText;
     }
 
     private void MainForm_HandleCreated(object? sender, EventArgs e)
@@ -49,16 +51,61 @@ public partial class MainForm : Form
 
     private void MainForm_Load(object? sender, EventArgs e)
     {
-        RefreshMonitors();
-        SetSliderValues(DefaultBrightness, DefaultContrast, DefaultGamma);
+        _isLoading = true;
+        try
+        {
+            RefreshMonitors();
+            SetSliderValues(DefaultBrightness, DefaultContrast, DefaultGamma);
 
-        _settings = SettingsStore.Load();
-        RefreshProfilesList();
-        RefreshTriggersList();
-        _watcher.UpdateTriggers(_settings.Triggers);
-        chkEnableTriggers.Checked = _settings.TriggersEnabled;
+            _settings = SettingsStore.Load();
+            RefreshProfilesList();
+            RefreshTriggersList();
+            _watcher.UpdateTriggers(_settings.Triggers);
+            chkEnableTriggers.Checked = _settings.TriggersEnabled;
 
-        trayIcon.Visible = true;
+            trayIcon.Visible = true;
+            StartActivationListener();
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void StartActivationListener()
+    {
+        var thread = new Thread(() =>
+        {
+            using var activate = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ActivateEventName);
+            while (true)
+            {
+                activate.WaitOne();
+                if (_isExiting || IsDisposed)
+                {
+                    break;
+                }
+
+                try
+                {
+                    BeginInvoke(RestoreWindow);
+                }
+                catch (ObjectDisposedException)
+                {
+                    break;
+                }
+            }
+        })
+        {
+            IsBackground = true
+        };
+        thread.Start();
+    }
+
+    private void RestoreWindow()
+    {
+        Show();
+        WindowState = FormWindowState.Normal;
+        Activate();
     }
 
     private void RefreshMonitors()
@@ -219,7 +266,7 @@ public partial class MainForm : Form
     private void SetStatus(string message, bool isError)
     {
         lblStatus.Text = message;
-        lblStatus.ForeColor = isError ? Color.Firebrick : Color.DimGray;
+        lblStatus.ForeColor = isError ? DarkTheme.Danger : DarkTheme.MutedText;
     }
 
     // --- Profiles tab ---
@@ -401,7 +448,11 @@ public partial class MainForm : Form
     {
         _watcher.Enabled = chkEnableTriggers.Checked;
         _settings.TriggersEnabled = chkEnableTriggers.Checked;
-        SettingsStore.Save(_settings);
+        if (!_isLoading)
+        {
+            SettingsStore.Save(_settings);
+        }
+
         UpdateTriggerStatusLabel();
     }
 
@@ -440,20 +491,16 @@ public partial class MainForm : Form
         {
             e.Cancel = true;
             Hide();
-            trayIcon.ShowBalloonTip(2000, "LightFighter", "Still running in the background. Right-click the tray icon to exit.", ToolTipIcon.Info);
             return;
         }
 
         trayIcon.Visible = false;
         _watcher.Dispose();
+        using var activate = new EventWaitHandle(false, EventResetMode.AutoReset, Program.ActivateEventName);
+        activate.Set();
     }
 
-    private void menuOpen_Click(object? sender, EventArgs e)
-    {
-        Show();
-        WindowState = FormWindowState.Normal;
-        Activate();
-    }
+    private void menuOpen_Click(object? sender, EventArgs e) => RestoreWindow();
 
     private void menuExit_Click(object? sender, EventArgs e)
     {

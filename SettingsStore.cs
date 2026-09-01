@@ -5,6 +5,10 @@ namespace LightFighter;
 internal static class SettingsStore
 {
     private static readonly string SettingsPath = Path.Combine(
+        Path.GetDirectoryName(Environment.ProcessPath) ?? AppContext.BaseDirectory,
+        "settings.json");
+
+    private static readonly string LegacySettingsPath = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
         "LightFighter",
         "settings.json");
@@ -15,6 +19,8 @@ internal static class SettingsStore
     {
         try
         {
+            MigrateLegacySettings();
+
             if (!File.Exists(SettingsPath))
             {
                 return new AppSettings();
@@ -25,7 +31,6 @@ internal static class SettingsStore
         }
         catch
         {
-            // Corrupt/unreadable settings shouldn't prevent the app from starting.
             return new AppSettings();
         }
     }
@@ -36,5 +41,17 @@ internal static class SettingsStore
         Directory.CreateDirectory(directory);
         var json = JsonSerializer.Serialize(settings, JsonOptions);
         File.WriteAllText(SettingsPath, json);
+    }
+
+    private static void MigrateLegacySettings()
+    {
+        if (File.Exists(SettingsPath) || !File.Exists(LegacySettingsPath))
+        {
+            return;
+        }
+
+        var directory = Path.GetDirectoryName(SettingsPath)!;
+        Directory.CreateDirectory(directory);
+        File.Copy(LegacySettingsPath, SettingsPath);
     }
 }

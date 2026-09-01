@@ -6,7 +6,7 @@ namespace LightFighter;
 
 // Correlates Screen.AllScreens (adapter device names, e.g. \\.\DISPLAY2) with WMI's WmiMonitorID
 // (friendly/manufacturer names) via the monitor's hardware ID, which both expose in different forms.
-internal static partial class MonitorService
+internal static class MonitorService
 {
     private static readonly Regex DeviceIdPattern = new(@"^\\\\\?\\DISPLAY#([^#]+)#([^#]+)#", RegexOptions.Compiled);
     private static readonly Regex WmiInstancePattern = new(@"^DISPLAY\\([^\\]+)\\([^\\_]+)", RegexOptions.Compiled);

@@ -1,5 +1,3 @@
-using System.Drawing.Drawing2D;
-
 namespace LightFighter;
 
 internal static class DarkTheme
@@ -22,13 +20,6 @@ internal static class DarkTheme
         form.ForeColor = Text;
         form.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
         ApplyToChildren(form.Controls);
-    }
-
-    public static void ConfigureTabs(TabControl tabs)
-    {
-        tabs.BackColor = Background;
-        tabs.ForeColor = Text;
-        tabs.DrawItem += DrawTab;
     }
 
     public static void ConfigureListBox(ListBox listBox)
@@ -87,7 +78,7 @@ internal static class DarkTheme
                     tabPage.ForeColor = Text;
                     break;
                 case Label label:
-                    label.ForeColor = MutedText;
+                    label.ForeColor = Text;
                     break;
                 case CheckBox checkBox:
                     checkBox.ForeColor = Text;
@@ -114,33 +105,6 @@ internal static class DarkTheme
         }
     }
 
-    private static void DrawTab(object? sender, DrawItemEventArgs e)
-    {
-        if (sender is not TabControl tabs)
-        {
-            return;
-        }
-
-        var selected = (e.State & DrawItemState.Selected) != 0;
-        using var background = new SolidBrush(selected ? Surface : Background);
-        using var textBrush = new SolidBrush(selected ? Text : MutedText);
-        using var accentBrush = new SolidBrush(Accent);
-
-        e.Graphics.FillRectangle(background, e.Bounds);
-        if (selected)
-        {
-            e.Graphics.FillRectangle(accentBrush, e.Bounds.X, e.Bounds.Bottom - 3, e.Bounds.Width, 3);
-        }
-
-        TextRenderer.DrawText(
-            e.Graphics,
-            tabs.TabPages[e.Index].Text,
-            tabs.Font,
-            e.Bounds,
-            textBrush.Color,
-            TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
-    }
-
     private static void DrawListItem(object? sender, DrawItemEventArgs e)
     {
         if (sender is not ListBox listBox || e.Index < 0)
@@ -150,7 +114,7 @@ internal static class DarkTheme
 
         var selected = (e.State & DrawItemState.Selected) != 0;
         using var background = new SolidBrush(selected ? SurfaceHover : Surface);
-        using var textBrush = new SolidBrush(selected ? Text : MutedText);
+        using var textBrush = new SolidBrush(Text);
         e.Graphics.FillRectangle(background, e.Bounds);
         TextRenderer.DrawText(
             e.Graphics,

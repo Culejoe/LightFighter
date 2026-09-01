@@ -10,6 +10,7 @@ public partial class AddTriggerForm : Form
     {
         InitializeComponent();
         ConfigureTheme();
+        HandleCreated += (_, _) => WindowTheme.ApplyDarkTitleBar(this);
         cmbProfile.Items.AddRange(profileNames.ToArray());
         if (cmbProfile.Items.Count > 0)
         {
@@ -23,6 +24,7 @@ public partial class AddTriggerForm : Form
         DarkTheme.ConfigureComboBox(cmbProfile);
         DarkTheme.ConfigureButton(btnOk, primary: true);
         DarkTheme.ConfigureButton(btnCancel);
+        lblProcessHint.ForeColor = DarkTheme.MutedText;
     }
 
     private static string StripExeExtension(string name) =>

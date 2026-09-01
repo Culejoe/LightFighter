@@ -2,15 +2,21 @@ namespace LightFighter;
 
 static class Program
 {
-    /// <summary>
-    ///  The main entry point for the application.
-    /// </summary>
+    internal const string MutexName = @"Local\LightFighter.SingleInstance";
+    internal const string ActivateEventName = @"Local\LightFighter.Activate";
+
     [STAThread]
     static void Main()
     {
-        // To customize application configuration such as set high DPI settings or default font,
-        // see https://aka.ms/applicationconfiguration.
+        using var activate = new EventWaitHandle(false, EventResetMode.AutoReset, ActivateEventName);
+        using var mutex = new Mutex(true, MutexName, out var createdNew);
+        if (!createdNew)
+        {
+            activate.Set();
+            return;
+        }
+
         ApplicationConfiguration.Initialize();
         Application.Run(new MainForm());
-    }    
+    }
 }

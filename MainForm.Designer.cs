@@ -275,7 +275,7 @@ partial class MainForm
         this.chkEnableTriggers.CheckedChanged += new EventHandler(this.chkEnableTriggers_CheckedChanged);
 
         this.lblTriggerStatus.AutoSize = true;
-        this.lblTriggerStatus.ForeColor = Color.DimGray;
+        this.lblTriggerStatus.ForeColor = DarkTheme.MutedText;
         this.lblTriggerStatus.Location = new Point(16, 236);
         this.lblTriggerStatus.Size = new Size(368, 15);
 
@@ -296,7 +296,7 @@ partial class MainForm
 
         // --- Status label ---
         this.lblStatus.AutoSize = true;
-        this.lblStatus.ForeColor = Color.DimGray;
+        this.lblStatus.ForeColor = DarkTheme.MutedText;
         this.lblStatus.Location = new Point(16, 360);
         this.lblStatus.Size = new Size(384, 15);
         this.lblStatus.Text = string.Empty;
